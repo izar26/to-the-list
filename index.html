@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi To-Do List</title>
+    <!-- Menyertakan Tailwind CSS dari CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Menambahkan gaya untuk efek hover pada tombol hapus */
+        .group:hover .delete-btn {
+            opacity: 1;
+        }
+
+        body {
+            background-image: url('img/bg.jpg');
+        }
+    </style>
+</head>
+<body class="bg-cover bg-no-repeat bg-center min-h-screen flex flex-col items-center">
+    <div class="bg-white mt-10 p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-4 text-center">To-Do List</h1>
+        <form id="todo-form" class="flex mb-4">
+            <input type="text" id="todo-input" class="flex-1 p-2 border border-gray-300 rounded-l-lg focus:outline-none" placeholder="Tambahkan tugas baru">
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded-r-lg">Tambah</button>
+        </form>
+        <ul id="todo-list">
+            <!-- Item to-do akan ditambahkan di sini -->
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const todoForm = document.getElementById('todo-form');
+            const todoInput = document.getElementById('todo-input');
+            const todoList = document.getElementById('todo-list');
+
+            // Memuat data to-do dari localStorage atau inisialisasi array kosong
+            let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+            // Fungsi untuk menyimpan data to-do ke localStorage
+            const saveTodos = () => {
+                localStorage.setItem('todos', JSON.stringify(todos));
+            };
+
+            // Fungsi untuk merender daftar to-do
+            const renderTodos = () => {
+                todoList.innerHTML = '';
+                todos.forEach((todo, index) => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'flex items-center justify-between p-2 bg-gray-200 rounded mb-2 group';
+                    listItem.innerHTML = `
+                        <div class="flex items-center">
+                            <input type="checkbox" class="mr-2" ${todo.completed ? 'checked' : ''}>
+                            <span class="${todo.completed ? 'line-through' : ''}">${todo.text}</span>
+                        </div>
+                        <button class="delete-btn bg-red-500 text-white p-1 rounded opacity-0 transition-opacity duration-300">Hapus</button>
+                    `;
+                    todoList.appendChild(listItem);
+
+                    // Event listener untuk checkbox
+                    listItem.querySelector('input').addEventListener('change', (e) => {
+                        todos[index].completed = e.target.checked;
+                        saveTodos();
+                        renderTodos();
+                    });
+
+                    // Event listener untuk tombol hapus
+                    listItem.querySelector('.delete-btn').addEventListener('click', () => {
+                        todos.splice(index, 1);
+                        saveTodos();
+                        renderTodos();
+                    });
+                });
+            };
+
+            // Event listener untuk form submit
+            todoForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const taskText = todoInput.value.trim();
+                if (taskText !== '') {
+                    todos.push({ text: taskText, completed: false });
+                    saveTodos();
+                    renderTodos();
+                    todoInput.value = '';
+                    todoInput.focus();
+                }
+            });
+
+            // Render awal daftar to-do
+            renderTodos();
+        });
+    </script>
+</body>
+</html>
